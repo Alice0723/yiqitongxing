@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>活动详情</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .theater-wrap {
+            background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .stage {
+            margin: 0 auto 20px;
+            max-width: 520px;
+            text-align: center;
+            background: #343a40;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 999px;
+            letter-spacing: 2px;
+            font-size: 12px;
+        }
+        .seat-row {
+            display: grid;
+            grid-template-columns: 56px 1fr;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .row-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 600;
+        }
+        .row-seats {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .row-seats .seat-item:nth-child(5) {
+            margin-right: 18px;
+        }
+        .seat-item {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            width: 48px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            background: #f8f9fa;
+            font-size: 12px;
+        }
+        .seat-item input {
+            display: none;
+        }
+        .seat-item.available:hover {
+            border-color: #0d6efd;
+        }
+        .seat-item.selected {
+            background: #d1e7dd;
+            border-color: #198754;
+        }
+        .seat-item.sold {
+            background: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+            border-color: #ced4da;
+        }
+        .seat-hint {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .seat-legend {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 12px;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .dot-available { background: #f8f9fa; border: 1px solid #dee2e6; }
+        .dot-selected { background: #d1e7dd; border: 1px solid #198754; }
+        .dot-sold { background: #e9ecef; border: 1px solid #ced4da; }
+    </style>
+</head>
+<body class="page-shell home-shell">
+<nav class="navbar navbar-expand-lg app-navbar px-3 py-2 mb-3">
+    <a class="navbar-brand app-brand" href="/">艺起同行</a>
+    <div class="home-nav-links">
+        <a href="/events" class="btn btn-outline-primary btn-sm">返回列表</a>
+    </div>
+    <span class="home-nav-auth ms-auto">
+        <a th:if="${currentUser == null}" href="/login" class="btn btn-outline-success btn-sm">登录</a>
+        <a th:if="${currentUser != null}" href="/my-orders" class="btn btn-outline-secondary btn-sm">我的订单</a>
+    </span>
+</nav>
+<div class="container mt-4 mb-5">
+    <section class="hero-card mb-4">
+        <div class="section-kicker">活动详情</div>
+        <div class="section-title" th:text="${event.name}"></div>
+        <div class="section-subtitle">查看场馆、票价、标签与座位信息。</div>
+    </section>
+    <div class="glass-card p-4 mb-4">
+    <p><strong>场馆：</strong> <span th:text="${event.venue}"></span></p>
+    <p><strong>时间：</strong> <span th:text="${#temporals.format(event.startTime, 'yyyy-MM-dd HH:mm')}"></span></p>
+    <p><strong>价格：</strong> ¥<span th:text="${event.price}"></span></p>
+    <p><strong>剩余票数：</strong> <span th:text="${event.remainingTickets}"></span></p>
+    <p><strong>标签：</strong>
+        <span th:if="${event.tags == null or #strings.isEmpty(event.tags)}">暂无</span>
+        <span th:if="${event.tags != null and !#strings.isEmpty(event.tags)}" class="badge bg-light text-dark me-1" th:each="tag : ${#strings.arraySplit(event.tags, ',')}" th:text="${tag}"></span>
+    </p>
+    <p><strong>描述：</strong> <span th:text="${event.description}"></span></p>
+    </div>
+
+    <hr>
+    <h4>立即购票</h4>
+    <p class="seat-hint">请选择你想要的座位，选中的座位会自动带入订单。</p>
+    <div th:if="${currentUser == null}" class="alert alert-info">
+        你正在游客模式浏览，登录后即可选座购票。
+        <a href="/login" class="btn btn-sm btn-primary ms-2">去登录</a>
+    </div>
+    <form th:if="${currentUser != null}" th:action="@{/order/create}" method="post" th:object="${orderRequest}" class="glass-card p-4">
+        <input type="hidden" name="eventId" th:value="${event.id}">
+        <input type="hidden" name="quantity" id="quantityInput" value="0">
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0">选择座位</label>
+                <span class="seat-hint">已选 <span id="selectedCount">0</span> 个：<span id="selectedSeatText">未选择</span></span>
+            </div>
+            <div class="seat-legend">
+                <span><i class="dot dot-available"></i>可选</span>
+                <span><i class="dot dot-selected"></i>已选</span>
+                <span><i class="dot dot-sold"></i>已占用</span>
+            </div>
+            <div th:if="${seatList == null or seatList.isEmpty()}" class="alert alert-warning">
+                当前暂无可选座位
+            </div>
+            <div th:unless="${seatList == null or seatList.isEmpty()}" class="theater-wrap">
+                <div class="stage">STAGE / 舞台</div>
+                <div class="seat-row" th:each="row : ${seatRows}">
+                    <div class="row-label" th:text="${row.key} + '排'"></div>
+                    <div class="row-seats">
+                        <label th:each="seat : ${row.value}"
+                               class="seat-item"
+                               th:classappend="${seat.status == 'AVAILABLE'} ? ' available' : ' sold'">
+                            <input type="checkbox"
+                                   class="seat-checkbox"
+                                   name="seatCodes"
+                                   th:value="${seat.seatCode}"
+                                   th:disabled="${seat.status != 'AVAILABLE'}">
+                            <span th:text="${seat.seatCode}"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="seat-price-box mb-3" th:attr="data-unit-price=${event.price}">
+            单张票价：¥<span id="unitPriceText" th:text="${event.price}"></span>，预计金额：¥<strong id="totalPriceText">0.00</strong>
+        </div>
+        <button type="submit" class="btn btn-brand">立即购买</button>
+        <a href="/events" class="btn btn-secondary">返回列表</a>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkboxes = document.querySelectorAll('.seat-checkbox');
+        const quantityInput = document.getElementById('quantityInput');
+        const selectedText = document.getElementById('selectedSeatText');
+        const selectedCount = document.getElementById('selectedCount');
+        const priceBox = document.querySelector('.seat-price-box');
+        const totalPriceText = document.getElementById('totalPriceText');
+        const unitPrice = priceBox ? parseFloat(priceBox.dataset.unitPrice || '0') : 0;
+
+        function refreshSelection() {
+            const selected = Array.from(checkboxes)
+                .filter(box => box.checked)
+                .map(box => box.value);
+
+            quantityInput.value = selected.length;
+            selectedCount.textContent = selected.length;
+            selectedText.textContent = selected.length > 0 ? selected.join(', ') : '未选择';
+            if (totalPriceText) {
+                totalPriceText.textContent = (unitPrice * selected.length).toFixed(2);
+            }
+
+            checkboxes.forEach(box => {
+                const label = box.closest('.seat-item');
+                if (label) {
+                    label.classList.toggle('selected', box.checked);
+                }
+            });
+        }
+
+        checkboxes.forEach(box => box.addEventListener('change', refreshSelection));
+        refreshSelection();
+    });
+</script>
+</body>
+</html>
