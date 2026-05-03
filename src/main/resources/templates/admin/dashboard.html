@@ -1,0 +1,171 @@
+﻿!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>管理员后�?/title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body class="page-shell home-shell">
+<nav class="navbar navbar-expand-lg app-navbar px-3 py-2 mb-3">
+    <a class="navbar-brand app-brand" href="/">艺起同行 · 管理后台</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+        <div class="home-nav-links">
+            <a href="/" class="btn btn-outline-secondary btn-sm me-2">返回首页</a>
+            <a href="/admin/student-auth/pending" class="btn btn-outline-primary btn-sm me-2">学生认证审核</a>
+            <a href="/teacher/dashboard" class="btn btn-outline-info btn-sm me-2">教师后台</a>
+            <a href="/theater/dashboard" class="btn btn-outline-info btn-sm">剧院后台</a>
+        </div>
+        <span class="home-nav-auth ms-auto">
+            <span th:if="${currentUser != null}" class="me-2">欢迎�?span th:text="${currentUser.username}"></span></span>
+            <a th:if="${currentUser != null}" href="/profile" class="btn btn-outline-info btn-sm me-2">个人中心</a>
+            <a th:if="${currentUser != null}" href="/logout" class="btn btn-outline-danger btn-sm">登出</a>
+        </span>
+    </div>
+</nav>
+<div class="container mt-4 mb-5">
+    <section class="hero-card mb-4">
+        <div class="section-kicker">管理员后�?/div>
+        <div class="section-title">运营数据看板</div>
+        <div class="section-subtitle">活动求供、用户管理、学生认证审核�?/div>
+    </section>
+<div class="container mt-3 mb-4">
+<div th:if="${importSuccess}" class="alert alert-success" th:text="${importSuccess}"></div>
+<div th:if="${importError}" class="alert alert-danger" th:text="${importError}"></div>
+<div class="row g-3 mb-3">
+    <div class="col-md-2"><div class="card glass-card"><div class="card-body">演出�?<strong th:text="${eventCount}"></strong></div></div></div>
+    <div class="col-md-2"><div class="card glass-card"><div class="card-body">拼团�?<strong th:text="${groupCount}"></strong></div></div></div>
+    <div class="col-md-2"><div class="card glass-card"><div class="card-body">报告�?<strong th:text="${reportCount}"></strong></div></div></div>
+    <div class="col-md-2"><div class="card glass-card"><div class="card-body">学生�?<strong th:text="${approvedStudentCount}"></strong></div></div></div>
+    <div class="col-md-2"><div class="card glass-card"><div class="card-body">售出�?<strong th:text="${soldTickets}"></strong></div></div></div>
+    <div class="col-md-2"><div class="card glass-card"><div class="card-body">上座�?<strong th:text="${seatRate + '%'}"></strong></div></div></div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h5>黑名单管�?/h5>
+        <div class="table-card">
+        <table class="table table-sm table-bordered mb-0">
+            <thead><tr><th>用户</th><th>角色</th><th>状�?/th><th>操作</th></tr></thead>
+            <tbody>
+            <tr th:each="u : ${users}">
+                <td th:text="${u.username}"></td>
+                <td th:text="${u.role}"></td>
+                <td th:text="${u.blacklisted ? '黑名�? : '正常'}"></td>
+                <td>
+                    <form th:action="@{/admin/users/{id}/blacklist(id=${u.id})}" method="post">
+                        <input type="hidden" name="blacklisted" th:value="${!u.blacklisted}">
+                        <button class="btn btn-sm btn-warning" type="submit" th:text="${u.blacklisted ? '解除' : '拉黑'}"></button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h5>上架演出</h5>
+        <div class="card glass-card mb-3"><div class="card-body">
+        <form action="/admin/events/create" method="post" class="mb-0">
+            <input class="form-control mb-2" name="name" placeholder="剧目名称" required>
+            <input class="form-control mb-2" name="venue" placeholder="剧院" required>
+            <input class="form-control mb-2" name="startTime" type="datetime-local" required>
+            <input class="form-control mb-2" name="totalTickets" type="number" placeholder="库存" required>
+            <input class="form-control mb-2" name="price" type="number" placeholder="票价" required>
+            <div class="mb-2">
+                <label class="form-label">演出标签（可多选）</label>
+                <div class="d-flex flex-wrap gap-2">
+                    <label class="form-check form-check-inline" th:each="tag : ${eventTagOptions}">
+                        <input class="form-check-input" type="checkbox" name="tags" th:value="${tag}">
+                        <span class="form-check-label" th:text="${tag}"></span>
+                    </label>
+                </div>
+            </div>
+            <textarea class="form-control mb-2" name="description" placeholder="描述"></textarea>
+            <button class="btn btn-brand" type="submit">发布演出</button>
+        </form>
+        </div></div>
+
+        <h5>发布美育课程</h5>
+        <div class="card glass-card"><div class="card-body">
+        <form action="/admin/courses/create" method="post">
+            <input class="form-control mb-2" name="title" placeholder="课程标题" required>
+            <input class="form-control mb-2" name="tags" placeholder="标签，如古典�?思政融合" required>
+            <input class="form-control mb-2" name="videoUrl" placeholder="回放链接" required>
+            <textarea class="form-control mb-2" name="description" placeholder="简�?></textarea>
+            <button class="btn btn-brand" type="submit">发布课程</button>
+        </form>
+        </div></div>
+
+        <h5 class="mt-3">批量导入学生名单</h5>
+        <div class="card glass-card"><div class="card-body">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <a class="btn btn-outline-primary btn-sm" href="/admin/students/template.csv">下载CSV模板</a>
+                <a class="btn btn-outline-secondary btn-sm" href="/admin/students/import/result.csv">导出最近导入账�?/a>
+                <span class="small text-muted">支持UTF-8编码，模板字段：name（或直接只写姓名列表�?/span>
+            </div>
+            <form action="/admin/students/import/file/advanced" method="post" enctype="multipart/form-data" class="mb-3">
+                <label class="form-label">上传CSV文件导入</label>
+                <div class="row g-2">
+                    <div class="col-md-7">
+                        <input class="form-control" type="file" name="file" accept=".csv,text/csv" required>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" name="importMode">
+                            <option value="skip">重复账号：跳�?/option>
+                            <option value="overwrite">重复账号：覆盖密�?/option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button class="btn btn-outline-success" type="submit">上传导入</button>
+                    </div>
+                </div>
+            </form>
+            <hr>
+            <form action="/admin/students/import/advanced" method="post">
+                <label class="form-label">或直接粘贴名单导入（每行一个姓名，也支持CSV格式�?/label>
+                <textarea class="form-control mb-2" name="studentNames" rows="6" placeholder="name,class_name&#10;张三,高一1�?#10;李四,高一1�?#10;王五,高一2�? required></textarea>
+                <div class="row g-2 mb-2">
+                    <div class="col-md-4">
+                        <select class="form-select" name="importMode">
+                            <option value="skip">重复账号：跳�?/option>
+                            <option value="overwrite">重复账号：覆盖密�?/option>
+                        </select>
+                    </div>
+                </div>
+                <div class="small text-muted mb-2">规则：用户名=姓名；初始密�?姓名全拼+123；若提供class_name列会写入学生“年�?班级”字段�?/div>
+                <button class="btn btn-brand" type="submit">导入并创建账�?/button>
+            </form>
+        </div></div>
+
+        <div class="card glass-card mt-3" th:if="${createdAccounts != null and !createdAccounts.isEmpty()}">
+            <div class="card-body">
+                <h6>本次新建账号</h6>
+                <div class="table-card">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead><tr><th>姓名</th><th>用户�?/th><th>初始密码</th></tr></thead>
+                        <tbody>
+                        <tr th:each="acc : ${createdAccounts}">
+                            <td th:text="${acc.name}"></td>
+                            <td th:text="${acc.username}"></td>
+                            <td th:text="${acc.password}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning mt-3" th:if="${failedNames != null and !failedNames.isEmpty()}">
+            <strong>未导入名单：</strong>
+            <span th:text="${#strings.listJoin(failedNames, '�?)}"></span>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>

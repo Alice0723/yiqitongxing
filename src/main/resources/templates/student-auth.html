@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>学生认证</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body class="page-shell home-shell">
+<nav class="navbar navbar-expand-lg app-navbar px-3 py-2 mb-3">
+    <a class="navbar-brand app-brand" href="/">艺启同行</a>
+    <div class="ms-auto home-nav-links">
+        <a href="/profile" class="btn btn-outline-primary btn-sm">个人中心</a>
+        <a href="/" class="btn btn-outline-primary btn-sm">首页</a>
+        <a href="/logout" class="btn btn-outline-danger btn-sm">登出</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">学生身份认证</h5>
+                </div>
+                <div class="card-body">
+                    <!-- 提示信息 -->
+                    <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}"></div>
+                    <div th:if="${param.success}" class="alert alert-success" th:text="${param.success}"></div>
+
+                    <!-- 如果已有申请 -->
+                    <div th:if="${studentAuth != null}" class="alert alert-info">
+                        <p>
+                            <strong>认证状态：</strong>
+                            <span th:if="${studentAuth.status == 'PENDING'}" class="badge bg-warning">待审核</span>
+                            <span th:if="${studentAuth.status == 'APPROVED'}" class="badge bg-success">已认证</span>
+                            <span th:if="${studentAuth.status == 'REJECTED'}" class="badge bg-danger">已拒绝</span>
+                        </p>
+                        <p><strong>申请时间：</strong> <span th:text="${#temporals.format(studentAuth.applyTime, 'yyyy-MM-dd HH:mm')}"></span></p>
+                    </div>
+
+                    <!-- 如果未认证或被拒绝，显示上传表单 -->
+                    <div th:if="${studentAuth == null || studentAuth.status == 'REJECTED'}">
+                        <form th:action="@{/student-auth/submit}" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="form-label">真实姓名</label>
+                                <input type="text" class="form-control" name="realName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">学校</label>
+                                <input type="text" class="form-control" name="schoolName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">年级</label>
+                                <input type="text" class="form-control" name="grade" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">学号</label>
+                                <input type="text" class="form-control" name="studentNo" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="certificate" class="form-label">上传学生证照片</label>
+                                <p class="form-text text-muted">请上传清晰的学生证照片（JPG、PNG、PDF 等格式）</p>
+                                <input type="file" class="form-control" id="certificate" name="certificate" required accept="image/*,.pdf">
+                            </div>
+                            <p class="text-muted small">
+                                <strong>提示：</strong>
+                                <ul>
+                                    <li>请确保学生证照片清晰可读</li>
+                                    <li>包含姓名、学号、学校、有效期等信息</li>
+                                    <li>我们会在 3-5 个工作日内完成审核</li>
+                                </ul>
+                            </p>
+                            <button type="submit" class="btn btn-primary">提交认证</button>
+                        </form>
+                    </div>
+
+                    <!-- 如果已认证 -->
+                    <div th:if="${studentAuth != null && studentAuth.status == 'APPROVED'}" class="alert alert-success">
+                        <h5>认证成功！</h5>
+                        <p>你已通过学生身份认证，可以享受学生优惠。</p>
+                        <p><strong>认证时间：</strong> <span th:text="${#temporals.format(studentAuth.reviewTime, 'yyyy-MM-dd HH:mm')}"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">认证须知</h6>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>学生认证通过后，可享受购票时的学生优惠</li>
+                        <li>学生证信息必须真实有效，虚假认证将被封号</li>
+                        <li>学生证过期前需重新认证</li>
+                        <li>如有任何问题，请联系客服</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="text-center mt-5 mb-3 text-muted">
+    <p>&copy; 2026 票务网站</p>
+</footer>
+</body>
+</html>

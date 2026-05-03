@@ -1,0 +1,68 @@
+﻿!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>注册</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body class="page-shell auth-shell">
+<nav class="navbar navbar-expand-lg app-navbar px-3 py-2">
+    <a class="navbar-brand app-brand" href="/">艺启同行</a>
+    <div class="home-nav-links">
+        <a href="/" class="btn btn-outline-primary btn-sm">查看活动</a>
+    </div>
+    <span class="home-nav-auth ms-auto">
+        <a href="/login" class="btn btn-outline-primary btn-sm">返回登录</a>
+    </span>
+</nav>
+
+<div class="container auth-page-wrap py-4 py-lg-5">
+    <div class="row align-items-stretch g-4">
+        <div class="col-lg-7">
+            <section class="login-hero hero-card h-100">
+                <div class="home-kicker mb-3">立即加入</div>
+                <h1 class="login-title">创建账号，继续使用活动、作业和成长体系�?/h1>
+                <p class="login-lead">注册后可以参与演出购票、拼团优惠、学生认证和美育成长记录，页面风格与你看到的首页保持一致�?/p>
+                <div class="login-points mt-4">
+                    <div class="login-point"><div class="login-point-title">活动购票</div><div class="login-point-text">浏览演出、选座和支付都在同一动线中完成�?/div></div>
+                    <div class="login-point"><div class="login-point-title">学生成长</div><div class="login-point-text">认证后可记录积分、学分和作业成果�?/div></div>
+                    <div class="login-point"><div class="login-point-title">拼团优惠</div><div class="login-point-text">和同学一起组团买票，价格更低�?/div></div>
+                </div>
+            </section>
+        </div>
+        <div class="col-lg-5">
+            <div class="auth-card login-card h-100">
+                <h2 class="mb-1">创建账号</h2>
+                <p class="small-muted mb-3">完成注册后即可参与活动、作业与成长体系�?/p>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <form th:action="@{/register}" th:object="${user}" method="post">
+                    <div class="mb-3">
+                        <label>用户�?/label>
+                        <input type="text" th:field="*{username}" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>密码</label>
+                        <input type="password" th:field="*{password}" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>注册身份</label>
+                        <select th:field="*{role}" class="form-select" required>
+                            <option value="ROLE_USER">学生/用户</option>
+                            <option value="ROLE_TEACHER">学校/老师</option>
+                            <option value="ROLE_THEATER">剧院/院团</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">真实姓名、学校、年级将在学生认证时填写�?/small>
+                    </div>
+                    <button type="submit" class="btn btn-brand w-100">注册</button>
+                </form>
+                <p class="mt-3 mb-0"><a href="/login">返回登录</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

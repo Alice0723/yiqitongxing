@@ -1,0 +1,275 @@
+﻿!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>艺启同行 - 上海之春国际音乐节·开幕音乐会</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body class="page-shell home-shell">
+<nav class="navbar navbar-expand-lg app-navbar px-3 py-2">
+    <a class="navbar-brand app-brand" href="/">艺启同行</a>
+    <div class="home-nav-links">
+        <a href="/schedule" class="btn btn-outline-primary btn-sm">演出排期</a>
+        <a href="/groupbuy" class="btn btn-outline-primary btn-sm">拼团购票</a>
+        <a href="/points" class="btn btn-outline-primary btn-sm">积分商城</a>
+    </div>
+    <span class="home-nav-auth ms-auto">
+        <span th:if="${currentUser != null}" class="me-2">欢迎�?span th:text="${currentUser.username}"></span></span>
+        <a th:if="${currentUser != null}" href="/profile" class="btn btn-outline-info btn-sm me-2">个人中心</a>
+        <a th:if="${currentUser != null}" href="/logout" class="btn btn-outline-danger btn-sm me-2">登出</a>
+        <a th:if="${currentUser == null}" href="/login" class="btn btn-outline-primary btn-sm me-2">登录</a>
+        <a th:if="${currentUser == null}" href="/register" class="btn btn-outline-success btn-sm">注册</a>
+    </span>
+</nav>
+
+<div class="container mt-4 mb-5">
+    <section class="home-hero hero-card mb-4">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <div class="home-kicker">�?8届上海之春国际音乐节</div>
+                <h1 class="home-title">上海之春国际音乐节·开幕音乐会</h1>
+                <p class="home-lead">用艺术连接校园与剧场，让学生票、拼团购票和美育课程一起进入同一条动线，减少门槛，也放大现场体验�?/p>
+                <div class="hero-inline-meta mt-3">
+                    <span th:text="${heroEvent != null && heroEvent.startTime != null ? #temporals.format(heroEvent.startTime, 'yyyy-MM-dd HH:mm') : '2026-04-26 19:30'}"></span>
+                    <span th:text="${heroEvent != null ? heroEvent.venue : '上海交响乐团音乐�?}"></span>
+                    <span>¥80-¥380</span>
+                    <span th:text="${studentVerified ? '学生专属' : '认证解锁'}"></span>
+                    <a href="/schedule">查看排期</a>
+                    <a href="/groupbuy">拼团购票</a>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <a href="/schedule" class="btn btn-brand btn-lg">查看排期</a>
+                    <a href="/groupbuy" class="btn btn-outline-light btn-lg home-ghost-btn">拼团购票</a>
+                    <a href="/ai-recommend" class="btn btn-outline-light btn-lg home-ghost-btn">AI推荐</a>
+                </div>
+                <div class="home-meta-strip mt-4">
+                    <span><strong th:text="${eventCount}"></strong> 场精彩演�?/span>
+                    <span><strong th:text="${openGroupCount}"></strong> 个拼团招募中</span>
+                    <span th:if="${studentVerified}">学生认证已通过，解锁学生专属票�?/span>
+                    <span th:if="${!studentVerified}">学生认证后可解锁专属优惠</span>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="feature-spotlight">
+                    <div class="feature-label">今日主推</div>
+                    <div class="feature-title" th:text="${heroEvent != null ? heroEvent.name : '上海之春国际音乐节·开幕音乐会'}"></div>
+                    <div class="feature-details">
+                        <div><span>时间</span><strong th:text="${heroEvent != null ? #temporals.format(heroEvent.startTime, 'yyyy-MM-dd HH:mm') : '2026-04-26 19:30'}"></strong></div>
+                        <div><span>场馆</span><strong th:text="${heroEvent != null ? heroEvent.venue : '上海交响乐团音乐�?}"></strong></div>
+                        <div><span>原价</span><strong th:text="|¥${heroPrice}|"></strong></div>
+                        <div><span>学生�?/span><strong th:text="|¥${heroStudentPrice}|"></strong></div>
+                    </div>
+                    <div class="feature-tags mt-3">
+                        <span class="tag-pill" th:each="tag : ${recommendedTags}" th:text="${tag}"></span>
+                    </div>
+                    <div class="feature-pager mt-4">
+                        <span class="feature-pager-dot active">01</span>
+                        <span class="feature-pager-dot">02</span>
+                        <span class="feature-pager-dot">03</span>
+                        <span class="feature-pager-dot">04</span>
+                        <span class="feature-pager-dot">05</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="hot-shows" class="mb-4">
+        <div class="section-heading-row">
+            <div>
+                <div class="section-kicker">热门演出</div>
+                <h2 class="section-heading">精选上新与高热度活�?/h2>
+            </div>
+            <a href="/" class="section-link">查看全部</a>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6 col-xl-4" th:each="event,stat : ${featuredEvents}">
+                <div class="show-card">
+                    <div class="poster-block" th:classappend="${stat.index % 5 == 0} ? ' poster-a' : (${stat.index % 5 == 1} ? ' poster-b' : (${stat.index % 5 == 2} ? ' poster-c' : (${stat.index % 5 == 3} ? ' poster-d' : ' poster-e')))">
+                        <div class="poster-badge" th:text="${event.tags}" th:if="${event.tags != null and !#strings.isEmpty(event.tags)}"></div>
+                        <div class="poster-badge" th:if="${event.tags == null or #strings.isEmpty(event.tags)}">热门推荐</div>
+                        <div class="poster-name" th:text="${event.name}"></div>
+                    </div>
+                    <div class="p-3">
+                        <div class="show-meta"> <span th:text="${#temporals.format(event.startTime, 'yyyy-MM-dd')}" th:if="${event.startTime != null}"></span> <span th:if="${event.startTime != null}">·</span> <span th:text="${event.venue}"></span></div>
+                        <div class="show-submeta mt-1">¥<span th:text="${event.price}"></span> · <span th:text="${studentVerified ? '学生价已解锁' : '认证后可�?}"></span> · 余票 <span th:text="${event.remainingTickets}"></span></div>
+                        <p class="show-desc mt-2" th:text="${event.description}"></p>
+                        <div class="d-flex flex-wrap gap-1 mb-3">
+                            <span class="tag-pill tag-pill-light" th:if="${event.tags == null or #strings.isEmpty(event.tags)}">暂无标签</span>
+                            <span class="tag-pill tag-pill-light" th:if="${event.tags != null and !#strings.isEmpty(event.tags)}" th:each="tag : ${#strings.arraySplit(event.tags, ',')}" th:text="${tag}"></span>
+                        </div>
+                        <a th:href="@{/event/{id}(id=${event.id})}" class="btn btn-brand w-100">立即购票</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="promo-banner glass-card">
+            <div class="row align-items-center g-3">
+                <div class="col-lg-8">
+                    <div class="section-kicker">拼团购票，最�?�?/div>
+                    <h2 class="section-heading mb-2">与同学组团买票，人越多价越低</h2>
+                    <p class="mb-0 text-muted">目前�?<strong th:text="${openGroupCount}"></strong> 个拼团正在招募中，适合班级、社团和艺术社群一起下单�?/p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <a href="/group-purchase" class="btn btn-brand me-2">立即组团</a>
+                    <a href="/group-purchase" class="btn btn-outline-primary">查看全部</a>
+                </div>
+            </div>
+            <div class="row g-3 mt-3" th:if="${!hotGroups.isEmpty()}">
+                <div class="col-md-4" th:each="group : ${hotGroups}">
+                    <div class="mini-group-card">
+                        <div class="mini-group-title" th:text="${group.event.name}"></div>
+                        <div class="mini-group-meta">发起�?<span th:text="${group.initiator.username}"></span></div>
+                        <div class="mini-group-progress"><span th:text="${group.currentSize}"></span>/<span th:text="${group.targetSize}"></span> 人成�?/div>
+                        <a href="/group-purchase" class="btn btn-sm btn-outline-light mt-2">去参�?/a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="schedule" class="mb-4">
+        <div class="section-heading-row">
+            <div>
+                <div class="section-kicker">演出排期</div>
+                <h2 class="section-heading">按时间顺序浏览近期场�?/h2>
+            </div>
+            <a href="/" class="section-link">全部排期</a>
+        </div>
+        <div class="schedule-card glass-card">
+            <div class="schedule-row schedule-head d-none d-lg-grid">
+                <span>日期</span><span>演出</span><span>场馆</span><span>时间</span><span>价格</span><span>状�?/span>
+            </div>
+            <div class="schedule-row" th:each="event : ${scheduleEvents}">
+                <span class="schedule-date" th:text="${event.startTime != null ? #temporals.format(event.startTime, 'MM月dd�?) : '-'}"></span>
+                <span class="schedule-name" th:text="${event.name}"></span>
+                <span class="schedule-venue" th:text="${event.venue}"></span>
+                <span class="schedule-time" th:text="${event.startTime != null ? #temporals.format(event.startTime, 'HH:mm') : '-'}"></span>
+                <span class="schedule-price">¥<span th:text="${event.price}"></span></span>
+                <span class="schedule-status">已售 <span th:text="${event.totalTickets != null and event.remainingTickets != null and event.totalTickets > 0 ? 100 - (event.remainingTickets * 100 / event.totalTickets) : 0}"></span>%</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="courses" class="mb-4">
+        <div class="section-heading-row">
+            <div>
+                <div class="section-kicker">美育课程</div>
+                <h2 class="section-heading">由顶尖艺术院校教师倾力打�?/h2>
+            </div>
+            <a href="/growth" class="section-link">进入成长中心</a>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6 col-xl-3" th:each="course : ${courseCards}">
+                <div class="course-card glass-card h-100">
+                    <div class="course-tag" th:text="${course.tag}"></div>
+                    <div class="course-title" th:text="${course.title}"></div>
+                    <div class="course-teacher" th:text="${course.teacher}"></div>
+                    <div class="course-info" th:text="${course.info}"></div>
+                    <div class="course-price-row">
+                        <span class="course-price" th:text="${course.price}"></span>
+                        <span class="course-origin" th:text="${course.originPrice}"></span>
+                    </div>
+                    <a href="/growth" class="btn btn-brand w-100 mt-3">立即报名</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="promo-banner volunteer-banner glass-card">
+            <div class="row align-items-center g-3">
+                <div class="col-lg-5">
+                    <div class="section-kicker">手拉手课�?/div>
+                    <h2 class="section-heading mb-2">让艺术教育走进更多孩子的课堂</h2>
+                    <p class="mb-0 text-muted">艺启同行联合上海顶尖艺术院校学生志愿者，通过线上直播向全国农村地区学生免费传授艺术课程�?/p>
+                </div>
+                <div class="col-lg-7">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <div class="metric-value">12,680+</div>
+                                <div class="metric-label">累计受益学生</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <div class="metric-value">860+</div>
+                                <div class="metric-label">志愿者人�?/div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <div class="metric-value">18</div>
+                                <div class="metric-label">观后感积分奖�?/div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 mt-3">
+                <div class="col-md-6" th:each="course : ${volunteerCards}">
+                    <div class="volunteer-card">
+                        <div class="course-tag tag-pill-light" th:text="${course.tag}"></div>
+                        <div class="course-title mt-2" th:text="${course.title}"></div>
+                        <div class="course-teacher" th:text="${course.teacher}"></div>
+                        <div class="course-info" th:text="${course.info}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="reviews" class="mb-4">
+        <div class="section-heading-row">
+            <div>
+                <div class="section-kicker">观众评论</div>
+                <h2 class="section-heading">发布观后感得积分，积累积分兑换好�?/h2>
+            </div>
+            <a href="/profile" class="section-link">查看我的积分</a>
+        </div>
+        <div class="row g-3">
+            <div class="col-lg-4" th:each="comment : ${comments}">
+                <div class="comment-card glass-card h-100">
+                    <div class="comment-score" th:text="${comment.score}"></div>
+                    <p class="comment-content" th:text="${comment.content}"></p>
+                    <div class="comment-author" th:text="${comment.name}"></div>
+                    <div class="comment-school" th:text="${comment.school}"></div>
+                    <div class="comment-event" th:text="${comment.event}"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer-card glass-card">
+        <div class="row g-3">
+            <div class="col-lg-5">
+                <h5 class="mb-2">艺启同行</h5>
+                <p class="mb-0 text-muted">专注学生群体的剧院余票分销平台，用学生认证确保专属优惠，用团购模式降低票价门槛�?/p>
+            </div>
+            <div class="col-lg-3">
+                <div class="footer-title">联系我们</div>
+                <div class="footer-text">400-888-2026</div>
+                <div class="footer-text">hello@yiqitonghang.com</div>
+                <div class="footer-text">上海市徐汇区汾阳�?0号上海音乐学�?/div>
+            </div>
+            <div class="col-lg-4">
+                <div class="footer-title">快速导�?/div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="#hot-shows" class="btn btn-sm btn-outline-primary">热门演出</a>
+                    <a href="#schedule" class="btn btn-sm btn-outline-primary">演出排期</a>
+                    <a href="#courses" class="btn btn-sm btn-outline-primary">美育课程</a>
+                    <a href="#reviews" class="btn btn-sm btn-outline-primary">观众评论</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom mt-3">© 2026 艺启同行 保留所有权�?/div>
+    </footer>
+</div>
+</body>
+</html>

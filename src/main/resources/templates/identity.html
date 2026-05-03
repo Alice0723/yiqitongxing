@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>学生认证 - 艺启同行</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body class="page-shell home-shell">
+<nav class="navbar navbar-expand-lg app-navbar px-3 py-2">
+    <a class="navbar-brand app-brand" href="/">艺启同行</a>
+    <div class="home-nav-links">
+        <a href="/schedule" class="btn btn-outline-primary btn-sm">演出排期</a>
+        <a href="/groupbuy" class="btn btn-outline-primary btn-sm">拼团购票</a>
+        <a href="/points" class="btn btn-outline-primary btn-sm">积分商城</a>
+        <a href="/ai-recommend" class="btn btn-outline-primary btn-sm">AI推荐</a>
+    </div>
+    <span class="home-nav-auth ms-auto">
+        <a th:if="${currentUser == null}" href="/login" class="btn btn-outline-primary btn-sm me-2">登录</a>
+        <a th:if="${currentUser == null}" href="/register" class="btn btn-outline-success btn-sm me-2">注册</a>
+        <a th:if="${currentUser != null}" href="/profile" class="btn btn-outline-info btn-sm">个人中心</a>
+        <a th:if="${currentUser != null}" href="/logout" class="btn btn-outline-danger btn-sm">登出</a>
+    </span>
+</nav>
+
+<div class="container mt-4 mb-5">
+    <section class="home-hero hero-card mb-4">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <div class="home-kicker">学生认证</div>
+                <h1 class="home-title">通过认证解锁学生专属票价</h1>
+                <p class="home-lead">请上传清晰的学生证照片，审核通过后即可享受学生优惠。</p>
+            </div>
+            <div class="col-lg-5">
+                <div class="feature-spotlight">
+                    <div class="feature-label">当前状态</div>
+                    <div class="feature-title">
+                        <span th:if="${studentAuth == null}">未提交认证</span>
+                        <span th:if="${studentAuth != null and studentAuth.status == 'PENDING'}">待审核</span>
+                        <span th:if="${studentAuth != null and studentAuth.status == 'APPROVED'}">已认证</span>
+                        <span th:if="${studentAuth != null and studentAuth.status == 'REJECTED'}">已拒绝</span>
+                    </div>
+                    <div class="small-muted" th:if="${studentAuth != null and studentAuth.applyTime != null}" th:text="${#temporals.format(studentAuth.applyTime, 'yyyy-MM-dd HH:mm')}"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="glass-card p-4 mb-4" th:if="${studentAuth == null or studentAuth.status == 'REJECTED'}">
+        <form th:action="@{/student-auth/submit}" method="post" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">真实姓名</label><input type="text" class="form-control" name="realName" required></div>
+                <div class="col-md-6"><label class="form-label">学校</label><input type="text" class="form-control" name="schoolName" required></div>
+                <div class="col-md-6"><label class="form-label">年级</label><input type="text" class="form-control" name="grade" required></div>
+                <div class="col-md-6"><label class="form-label">学号</label><input type="text" class="form-control" name="studentNo" required></div>
+                <div class="col-12"><label class="form-label">上传学生证照片</label><input type="file" class="form-control" name="certificate" required accept="image/*,.pdf"></div>
+            </div>
+            <button type="submit" class="btn btn-brand mt-3">立即认证</button>
+        </form>
+    </div>
+
+    <div class="alert alert-success-soft" th:if="${studentAuth != null and studentAuth.status == 'APPROVED'}">
+        你已通过学生身份认证，可以享受学生优惠。
+    </div>
+</div>
+</body>
+</html>
